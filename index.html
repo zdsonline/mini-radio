@@ -540,7 +540,23 @@
         ];
 
         const audio = document.getElementById('radioPlayer');
-        let currentIndex = -1, isPlaying = false;
+        // Web Audio API 音量控制（兼容 iOS Safari）
+        let audioCtx, gainNode, sourceNode, audioCtxInitialized = false;
+
+        function initAudioContext() {
+            if (audioCtxInitialized) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                sourceNode = audioCtx.createMediaElementSource(audio);
+                gainNode = audioCtx.createGain();
+                sourceNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                gainNode.gain.value = 0.8; // 与初始滑块值一致
+                audioCtxInitialized = true;
+            } catch (e) {
+                console.warn('Web Audio API 不可用，回退到 audio.volume', e);
+            }
+        }
 
         function init() {
             renderPresets();
@@ -568,6 +584,13 @@
 
         function playStation(index) {
             if (index < 0 || index >= STATIONS.length || !STATIONS[index].url) return;
+
+            // 🔑 切换电台时也确保 AudioContext 已激活
+            initAudioContext();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             currentIndex = index;
             document.getElementById('stationName').textContent = STATIONS[index].name;
             document.getElementById('stationFreq').textContent = STATIONS[index].freq;
@@ -577,11 +600,17 @@
             audio.load();
             audio.play().catch(err => setStatus('error', '点击播放按钮开始'));
         }
-
         function togglePlay() {
+            // 🔑 关键：在用户点击时初始化并恢复 AudioContext
+            initAudioContext();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             if (currentIndex === -1 && !audio.src) {playStation(0); return;}
-            if (isPlaying) {audio.pause();}
-            else {
+            if (isPlaying) {
+                audio.pause();
+            } else {
                 if (!audio.src) {playStation(0); return;}
                 setStatus('loading', '正在连接...');
                 audio.play().catch(() => setStatus('error', '播放失败'));
@@ -599,7 +628,14 @@
             playStation(STATIONS.length - 1);
         }
 
-        function changeVolume(val) {audio.volume = val / 100;}
+        function changeVolume(val) {
+            const v = val / 100;
+            if (audioCtxInitialized && gainNode) {
+                gainNode.gain.value = v;
+            } else {
+                audio.volume = v; // 不支持 Web Audio 时的降级方案
+            }
+        }
         function updatePlayButton(playing) {const btn = document.getElementById('playBtn'); btn.textContent = playing ? '⏸' : '▶'; btn.classList.toggle('playing', playing);}
         function setStatus(type, text) {const dot = document.getElementById('statusDot'); dot.className = 'status-dot'; if (type) dot.classList.add(type); document.getElementById('statusText').textContent = text;}
         function showToast(msg) {const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);}
