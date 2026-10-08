@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radio-v1.4';
+const CACHE_NAME = 'radio-v1.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -38,5 +38,3 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
-
-document.querySelector('.footer').textContent = '基于 HTML5 Audio · 需要网络连接 · 0 成本方案 · '+CACHE_NAME;
