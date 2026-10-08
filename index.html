@@ -8,13 +8,10 @@
 
     <!-- PWA 核心配置 -->
     <link rel="manifest" href="./manifest.json">
-    <!-- 路径根据你实际存放位置调整 -->
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-    <!-- iOS Safari 专属 PWA 补丁 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="收音机">
-    <link rel="apple-touch-icon" href="./icon-192.png">
 
     <style>
         * {
@@ -130,15 +127,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.4;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
         .status-text {
@@ -167,22 +157,12 @@
         }
 
         @keyframes visualize {
-            0% {
-                height: 4px;
-            }
-
-            100% {
-                height: 28px;
-            }
+            0% { height: 4px; }
+            100% { height: 28px; }
         }
 
-        .visualizer.active .bar:nth-child(odd) {
-            animation-delay: 0.1s;
-        }
-
-        .visualizer.active .bar:nth-child(3n) {
-            animation-delay: 0.2s;
-        }
+        .visualizer.active .bar:nth-child(odd) { animation-delay: 0.1s; }
+        .visualizer.active .bar:nth-child(3n) { animation-delay: 0.2s; }
 
         .controls {
             display: flex;
@@ -201,9 +181,7 @@
             transition: all 0.2s;
         }
 
-        .btn:active {
-            transform: scale(0.92);
-        }
+        .btn:active { transform: scale(0.92); }
 
         .btn-play {
             width: 72px;
@@ -243,35 +221,41 @@
             color: #888;
             width: 24px;
             text-align: center;
+            flex-shrink: 0;
         }
 
+        /* 🔧 iOS 音量滑块核心修复样式 */
         .volume-slider {
             flex: 1;
-            -webkit-appearance: slider-horizontal; /* iOS 关键修复 */
+            -webkit-appearance: slider-horizontal; /* 强制 iOS 使用原生水平滑块 */
             appearance: auto;
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.15);
+            height: 24px; /* 保证原生控件容器有足够高度 */
+            min-height: 24px;
+            margin: 0;
+            padding: 0;
+            background: transparent; /* iOS 下滑块背景必须透明，否则遮挡原生轨道 */
             outline: none;
-            margin: 10px 0; /* 增加垂直热区 */
+            cursor: pointer;
         }
 
-        /* Webkit 滑块轨道样式 */
-        .volume-slider::-webkit-slider-runnable-track {
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.15);
+        /* 仅对非 iOS 浏览器自定义轨道颜色，iOS 忽略此规则使用原生样式 */
+        @supports not (-webkit-touch-callout: none) {
+            .volume-slider::-webkit-slider-runnable-track {
+                height: 4px;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.15);
+            }
         }
 
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 24px; /* 增大触摸目标 */
+            width: 24px;
             height: 24px;
             border-radius: 50%;
             background: #64c8ff;
             cursor: pointer;
-            margin-top: -10px; /* 居中修正 */
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            margin-top: -10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .section-title {
@@ -299,9 +283,7 @@
             text-align: left;
         }
 
-        .preset-btn:active {
-            transform: scale(0.96);
-        }
+        .preset-btn:active { transform: scale(0.96); }
 
         .preset-btn.active {
             background: rgba(100, 200, 255, 0.12);
@@ -320,13 +302,9 @@
             color: #777;
         }
 
-        .preset-btn.active .ch-name {
-            color: #64c8ff;
-        }
+        .preset-btn.active .ch-name { color: #64c8ff; }
 
-        .custom-section {
-            margin-bottom: 20px;
-        }
+        .custom-section { margin-bottom: 20px; }
 
         .input-group {
             display: flex;
@@ -345,13 +323,8 @@
             outline: none;
         }
 
-        .custom-input:focus {
-            border-color: rgba(100, 200, 255, 0.4);
-        }
-
-        .custom-input::placeholder {
-            color: #555;
-        }
+        .custom-input:focus { border-color: rgba(100, 200, 255, 0.4); }
+        .custom-input::placeholder { color: #555; }
 
         .btn-go {
             background: linear-gradient(135deg, #64c8ff 0%, #4a9eff 100%);
@@ -412,15 +385,9 @@
             <div class="station-name" id="stationName">选择电台开始收听</div>
             <div class="station-freq" id="stationFreq"></div>
             <div class="visualizer" id="visualizer">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
             </div>
             <div class="status-bar">
                 <div class="status-dot" id="statusDot"></div>
@@ -436,8 +403,8 @@
 
         <div class="volume-section">
             <span class="volume-icon">🔈</span>
-            <!-- 移除 oninput，改由 JS 统一绑定以兼容 iOS -->
-            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+            <!-- 移除 oninput，由 JS 统一绑定以兼容 iOS -->
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80" step="1">
             <span class="volume-icon">🔊</span>
         </div>
 
@@ -453,101 +420,29 @@
             <div class="input-hint">支持 m3u8 / mp3 / aac 等格式的直播流地址</div>
         </div>
 
-        <div class="footer">基于 HTML5 Audio · 需要网络连接 · 0 成本方案</div>
+        <div class="footer">基于 HTML5 Audio · 需要网络连接 · 0 成本方案 · </div>
     </div>
 
     <div class="toast" id="toast"></div>
     <audio id="radioPlayer" preload="none" playsinline></audio>
 
     <script>
-        // 真实可用的直播流地址（已修复 Edge 兼容性问题）
         const STATIONS = [
-
-
-            // 国内不稳定源
-            {
-                name: '991',
-                freq: '991齐鲁网',
-                url: 'https://tfzy2408x8719xcd00x1003xx29-audiolive302iqilucom.100ycdn.com/audiolive302.iqilu.com/sdradioYinyue/sdradio07/playlist.m3u8'
-            },
-            {
-                name: '991',
-                freq: '991喜马拉雅',
-                url: 'https://live.ximalaya.com/radio-first-page-app/live/794/64.m3u8'
-            },
-            {
-                name: '887',
-                freq: '887喜马拉雅',
-                url: 'https://live.ximalaya.com/radio-first-page-app/live/799/64.m3u8'
-            },
-            {
-                name: 'BCC中广音乐',
-                freq: 'BCC中广音乐',
-                url: 'http://stream.rcs.revma.com/ks4vsmg3qtzuv'
-            },
-
-            // 📰 新闻与综合
-            {
-                name: 'BBC World Service',
-                freq: '英国 · 英语环球新闻',
-                url: 'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service'
-            },
-            {
-                name: 'NPR News',
-                freq: '美国 · 国家公共广播',
-                url: 'https://npr-ice.streamguys1.com/live.mp3'
-            },
-            {
-                name: 'LBC News',
-                freq: '英国 · 时事评论',
-                url: 'https://media-ssl.musicradio.com/LBCNews'
-            },
-
-            // 🎵 流行与榜单
-            {
-                name: 'Capital FM',
-                freq: '英国 · 热门金曲 Top40',
-                url: 'https://media-ssl.musicradio.com/CapitalUK'
-            },
-            {
-                name: 'Heart UK',
-                freq: '英国 · 成人当代流行',
-                url: 'https://media-ssl.musicradio.com/HeartUK'
-            },
-            {
-                name: 'Pop Hits',
-                freq: '欧美流行 · 经典与新作',
-                url: 'https://listen.181fm.com/181-beatles_128k.mp3'
-            },
-
-            // 🎷 爵士、古典与轻松音乐
-            {
-                name: 'Classic FM',
-                freq: '英国 · 古典音乐',
-                url: 'https://media-ssl.musicradio.com/ClassicFM'
-            },
-            {
-                name: 'Smooth Radio',
-                freq: '英国 · 灵魂/爵士/R&B',
-                url: 'https://media-ssl.musicradio.com/SmoothUK'
-            },
-            {
-                name: 'Smooth Jazz',
-                freq: '平滑爵士 · 工作背景音',
-                url: 'https://listen.181fm.com/181-smoothjazz_128k.mp3'
-            },
-
-            // 🎧 独立、Lo-Fi 与特色精选
-            {
-                name: 'Radio Paradise',
-                freq: '全球 · 独立/摇滚/电子精选',
-                url: 'https://stream.radioparadise.com/aac-320'
-            },
-            {
-                name: 'Lo-Fi Hip Hop',
-                freq: '学习/编程 · 专注节拍',
-                url: 'https://play.streamafrica.net/lofiradio'
-            }
+            { name: '991', freq: '991齐鲁网', url: 'https://tfzy2408x8719xcd00x1003xx29-audiolive302iqilucom.100ycdn.com/audiolive302.iqilu.com/sdradioYinyue/sdradio07/playlist.m3u8' },
+            { name: '991', freq: '991喜马拉雅', url: 'https://live.ximalaya.com/radio-first-page-app/live/794/64.m3u8' },
+            { name: '887', freq: '887喜马拉雅', url: 'https://live.ximalaya.com/radio-first-page-app/live/799/64.m3u8' },
+            { name: 'BCC中广音乐', freq: 'BCC中广音乐', url: 'http://stream.rcs.revma.com/ks4vsmg3qtzuv' },
+            { name: 'BBC World Service', freq: '英国 · 英语环球新闻', url: 'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service' },
+            { name: 'NPR News', freq: '美国 · 国家公共广播', url: 'https://npr-ice.streamguys1.com/live.mp3' },
+            { name: 'LBC News', freq: '英国 · 时事评论', url: 'https://media-ssl.musicradio.com/LBCNews' },
+            { name: 'Capital FM', freq: '英国 · 热门金曲 Top40', url: 'https://media-ssl.musicradio.com/CapitalUK' },
+            { name: 'Heart UK', freq: '英国 · 成人当代流行', url: 'https://media-ssl.musicradio.com/HeartUK' },
+            { name: 'Pop Hits', freq: '欧美流行 · 经典与新作', url: 'https://listen.181fm.com/181-beatles_128k.mp3' },
+            { name: 'Classic FM', freq: '英国 · 古典音乐', url: 'https://media-ssl.musicradio.com/ClassicFM' },
+            { name: 'Smooth Radio', freq: '英国 · 灵魂/爵士/R&B', url: 'https://media-ssl.musicradio.com/SmoothUK' },
+            { name: 'Smooth Jazz', freq: '平滑爵士 · 工作背景音', url: 'https://listen.181fm.com/181-smoothjazz_128k.mp3' },
+            { name: 'Radio Paradise', freq: '全球 · 独立/摇滚/电子精选', url: 'https://stream.radioparadise.com/aac-320' },
+            { name: 'Lo-Fi Hip Hop', freq: '学习/编程 · 专注节拍', url: 'https://play.streamafrica.net/lofiradio' }
         ];
 
         const audio = document.getElementById('radioPlayer');
@@ -556,20 +451,38 @@
         function init() {
             renderPresets();
             audio.volume = 0.8;
-            
-            // 🔧 iOS 音量滑块兼容性修复：同时监听 input 和 change
-            const volumeSlider = document.getElementById('volumeSlider');
-            const handleVolumeChange = (e) => {
-                audio.volume = e.target.value / 100;
-            };
-            volumeSlider.addEventListener('input', handleVolumeChange);
-            volumeSlider.addEventListener('change', handleVolumeChange);
 
-            audio.addEventListener('playing', () => {isPlaying = true; updatePlayButton(true); setStatus('active', '正在播放'); document.getElementById('visualizer').classList.add('active');});
+            // 🔧 iOS 音量滑块兼容性修复
+            const volumeSlider = document.getElementById('volumeSlider');
+            const setVolume = () => {
+                const val = parseFloat(volumeSlider.value);
+                if (!isNaN(val)) audio.volume = val / 100;
+            };
+            // input: 实时拖动; change: iOS 松手后补发; touchend: 兜底 iOS 极端情况
+            volumeSlider.addEventListener('input', setVolume, { passive: true });
+            volumeSlider.addEventListener('change', setVolume);
+            volumeSlider.addEventListener('touchend', setVolume, { passive: true });
+
+            audio.addEventListener('playing', () => {
+                isPlaying = true;
+                updatePlayButton(true);
+                setStatus('active', '正在播放');
+                document.getElementById('visualizer').classList.add('active');
+            });
             audio.addEventListener('waiting', () => setStatus('loading', '缓冲中...'));
             audio.addEventListener('stalled', () => setStatus('loading', '缓冲中...'));
-            audio.addEventListener('pause', () => {isPlaying = false; updatePlayButton(false); setStatus('', '已暂停'); document.getElementById('visualizer').classList.remove('active');});
-            audio.addEventListener('error', () => {isPlaying = false; updatePlayButton(false); document.getElementById('visualizer').classList.remove('active'); setStatus('error', '播放出错，请重试');});
+            audio.addEventListener('pause', () => {
+                isPlaying = false;
+                updatePlayButton(false);
+                setStatus('', '已暂停');
+                document.getElementById('visualizer').classList.remove('active');
+            });
+            audio.addEventListener('error', () => {
+                isPlaying = false;
+                updatePlayButton(false);
+                document.getElementById('visualizer').classList.remove('active');
+                setStatus('error', '播放出错，请重试');
+            });
         }
 
         function renderPresets() {
@@ -591,39 +504,57 @@
             currentIndex = index;
             document.getElementById('stationName').textContent = STATIONS[index].name;
             document.getElementById('stationFreq').textContent = STATIONS[index].freq;
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.toggle('active', parseInt(btn.getAttribute('data-index')) === index));
+            document.querySelectorAll('.preset-btn').forEach(btn =>
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-index')) === index)
+            );
             setStatus('loading', '正在连接...');
             audio.src = STATIONS[index].url;
             audio.load();
-            audio.play().catch(err => setStatus('error', '点击播放按钮开始'));
+            audio.play().catch(() => setStatus('error', '点击播放按钮开始'));
         }
 
         function togglePlay() {
-            if (currentIndex === -1 && !audio.src) {playStation(0); return;}
-            if (isPlaying) {audio.pause();}
-            else {
-                if (!audio.src) {playStation(0); return;}
+            if (currentIndex === -1 && !audio.src) { playStation(0); return; }
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                if (!audio.src) { playStation(0); return; }
                 setStatus('loading', '正在连接...');
                 audio.play().catch(() => setStatus('error', '播放失败'));
             }
         }
 
-        function prevStation() {playStation((currentIndex - 1 + STATIONS.length) % STATIONS.length);}
-        function nextStation() {playStation((currentIndex + 1) % STATIONS.length);}
+        function prevStation() { playStation((currentIndex - 1 + STATIONS.length) % STATIONS.length); }
+        function nextStation() { playStation((currentIndex + 1) % STATIONS.length); }
 
         function playCustomUrl() {
             const url = document.getElementById('customUrl').value.trim();
-            if (!url) {showToast('请输入直播流地址'); return;}
-            STATIONS.push({name: '自定义电台', freq: url.substring(0, 20) + '...', url: url});
+            if (!url) { showToast('请输入直播流地址'); return; }
+            STATIONS.push({ name: '自定义电台', freq: url.substring(0, 20) + '...', url: url });
             renderPresets();
             playStation(STATIONS.length - 1);
         }
 
-        function updatePlayButton(playing) {const btn = document.getElementById('playBtn'); btn.textContent = playing ? '⏸' : '▶'; btn.classList.toggle('playing', playing);}
-        function setStatus(type, text) {const dot = document.getElementById('statusDot'); dot.className = 'status-dot'; if (type) dot.classList.add(type); document.getElementById('statusText').textContent = text;}
-        function showToast(msg) {const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);}
+        function updatePlayButton(playing) {
+            const btn = document.getElementById('playBtn');
+            btn.textContent = playing ? '⏸' : '▶';
+            btn.classList.toggle('playing', playing);
+        }
 
-        // 注册 Service Worker (使用相对路径)
+        function setStatus(type, text) {
+            const dot = document.getElementById('statusDot');
+            dot.className = 'status-dot';
+            if (type) dot.classList.add(type);
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW failed:', err));
@@ -632,20 +563,20 @@
 
         init();
 
-        // 检测 SW 更新并提示用户
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(reg => {
                 reg.onupdatefound = () => {
                     const newWorker = reg.installing;
                     newWorker.onstatechange = () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // 检测到新版本已安装
                             showToast('🎉 频道列表已更新，请刷新页面');
                         }
                     };
                 };
             });
         }
+
+        document.querySelector('.footer').textContent = '基于 HTML5 Audio · 需要网络连接 · 0 成本方案 · '+CACHE_NAME;
     </script>
 </body>
 
