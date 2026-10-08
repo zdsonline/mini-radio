@@ -247,20 +247,31 @@
 
         .volume-slider {
             flex: 1;
-            -webkit-appearance: none;
+            -webkit-appearance: slider-horizontal; /* iOS 关键修复 */
+            appearance: auto;
             height: 4px;
             border-radius: 2px;
             background: rgba(255, 255, 255, 0.15);
             outline: none;
+            margin: 10px 0; /* 增加垂直热区 */
+        }
+
+        /* Webkit 滑块轨道样式 */
+        .volume-slider::-webkit-slider-runnable-track {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 24px; /* 增大触摸目标 */
+            height: 24px;
             border-radius: 50%;
             background: #64c8ff;
             cursor: pointer;
+            margin-top: -10px; /* 居中修正 */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .section-title {
@@ -425,8 +436,8 @@
 
         <div class="volume-section">
             <span class="volume-icon">🔈</span>
-            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80"
-                oninput="changeVolume(this.value)">
+            <!-- 移除 oninput，改由 JS 统一绑定以兼容 iOS -->
+            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
             <span class="volume-icon">🔊</span>
         </div>
 
@@ -545,6 +556,15 @@
         function init() {
             renderPresets();
             audio.volume = 0.8;
+            
+            // 🔧 iOS 音量滑块兼容性修复：同时监听 input 和 change
+            const volumeSlider = document.getElementById('volumeSlider');
+            const handleVolumeChange = (e) => {
+                audio.volume = e.target.value / 100;
+            };
+            volumeSlider.addEventListener('input', handleVolumeChange);
+            volumeSlider.addEventListener('change', handleVolumeChange);
+
             audio.addEventListener('playing', () => {isPlaying = true; updatePlayButton(true); setStatus('active', '正在播放'); document.getElementById('visualizer').classList.add('active');});
             audio.addEventListener('waiting', () => setStatus('loading', '缓冲中...'));
             audio.addEventListener('stalled', () => setStatus('loading', '缓冲中...'));
@@ -599,7 +619,6 @@
             playStation(STATIONS.length - 1);
         }
 
-        function changeVolume(val) {audio.volume = val / 100;}
         function updatePlayButton(playing) {const btn = document.getElementById('playBtn'); btn.textContent = playing ? '⏸' : '▶'; btn.classList.toggle('playing', playing);}
         function setStatus(type, text) {const dot = document.getElementById('statusDot'); dot.className = 'status-dot'; if (type) dot.classList.add(type); document.getElementById('statusText').textContent = text;}
         function showToast(msg) {const toast = document.getElementById('toast'); toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2500);}
